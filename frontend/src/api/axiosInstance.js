@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = 'http://localhost:8000/api/';
+const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/';
 
 const axiosInstance = axios.create({
   baseURL,
@@ -26,17 +26,25 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
+
       const refreshToken = localStorage.getItem('refresh_token');
+
       if (refreshToken) {
         try {
-          const res = await axios.post(`${baseURL}auth/token/refresh/`, { refresh: refreshToken });
+          const res = await axios.post(`${baseURL}auth/token/refresh/`, {
+            refresh: refreshToken,
+          });
+
           const newAccess = res.data.access;
           localStorage.setItem('access_token', newAccess);
+
           if (res.data.refresh) {
             localStorage.setItem('refresh_token', res.data.refresh);
           }
+
           originalRequest.headers.Authorization = `Bearer ${newAccess}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
@@ -46,13 +54,14 @@ axiosInstance.interceptors.response.use(
           window.location.href = '/login';
           return Promise.reject(refreshError);
         }
-      } else {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
       }
+
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
     }
+
     return Promise.reject(error);
   }
 );
