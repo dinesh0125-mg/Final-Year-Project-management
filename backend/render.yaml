@@ -2,18 +2,17 @@ services:
   - type: web
     name: projecthub-backend
     env: python
-    buildCommand: |
-      pip install -r requirements.txt
-      python manage.py migrate
-      python manage.py collectstatic --noinput
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
     startCommand: gunicorn config.wsgi:application
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.8
+        value: 3.12.4
       - key: DEBUG
         value: False
       - key: ALLOWED_HOSTS
-        value: .onrender.com
+        value: projecthub-backend.onrender.com
       - key: DATABASE_URL
         fromDatabase:
           name: projecthub-db
@@ -21,6 +20,18 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: FRONTEND_URL
+        value: https://projecthub-dinesh-m.vercel.app
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+      - key: JWT_SECRET
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
@@ -29,6 +40,6 @@ services:
       - key: CLOUDINARY_API_SECRET
         sync: false
 
-  - type: psql
-    name: projecthub-db
+databases:
+  - name: projecthub-db
     plan: free
