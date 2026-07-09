@@ -24,7 +24,14 @@ const Teams = () => {
   const [error, setError] = useState('');
 
   const fetchTeam = () => {
-    teamAPI.myTeam().then(res => setTeam(res.data.data)).catch(() => setTeam(null)).finally(() => setLoading(false));
+    teamAPI.myTeam().then(res => {
+      const teamData = res.data.data;
+      if (teamData && Object.keys(teamData).length > 0) {
+        setTeam(teamData);
+      } else {
+        setTeam(null);
+      }
+    }).catch(() => setTeam(null)).finally(() => setLoading(false));
   };
 
   useEffect(() => { fetchTeam(); }, []);
