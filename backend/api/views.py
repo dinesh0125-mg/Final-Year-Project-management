@@ -331,7 +331,9 @@ class TeamViewSet(StandardResponseMixin, viewsets.ModelViewSet):
     def my_team(self, request):
         team = request.user.teams.first()
         if not team:
-            return api_response(data=None, message="No team found")
+            team = request.user.led_teams.first()
+        if not team:
+            return Response({"success": True, "message": "No team found", "data": None}, status=200)
         return api_response(data=TeamDetailSerializer(team).data)
 
     @action(detail=True, methods=['post'], url_path='allocate-guide')
